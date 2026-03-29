@@ -1,9 +1,10 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Volume2, VolumeX } from "lucide-react";
+import CanvasReels, { type CanvasReelsHandle } from "./CanvasReels";
+import tigerLogo from "@/assets/tiger-logo.png";
 
 const SYMBOLS = ["🐯", "💰", "🐉", "🏮", "💎", "🍀", "7️⃣", "⭐"];
 
@@ -22,27 +23,30 @@ function getRandomSymbol() {
   return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
 }
 
-function ReelColumn({ symbols, spinning }: { symbols: string[]; spinning: boolean }) {
+// Decorative LED lights
+function LedStrip({ count, vertical }: { count: number; vertical?: boolean }) {
   return (
-    <div className="w-20 h-24 bg-reel-gradient rounded-md border border-border overflow-hidden relative">
-      {/* Gradient overlays */}
-      <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-background/80 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-background/80 to-transparent z-10 pointer-events-none" />
-
-      <div className="flex flex-col items-center justify-center h-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={symbols.join("")}
-            initial={spinning ? { y: -40, opacity: 0 } : false}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: "spring", damping: 12, stiffness: 200 }}
-            className="text-4xl leading-none select-none"
-          >
-            {symbols[0]}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+    <div className={`flex ${vertical ? "flex-col" : "flex-row"} gap-1.5 items-center justify-center`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-full"
+          style={{
+            width: 6,
+            height: 6,
+            background: i % 3 === 0
+              ? "radial-gradient(circle, #FFD700 30%, #8B6914 100%)"
+              : i % 3 === 1
+              ? "radial-gradient(circle, #FF4444 30%, #8B0000 100%)"
+              : "radial-gradient(circle, #FFD700 30%, #8B6914 100%)",
+            boxShadow: i % 2 === 0
+              ? "0 0 4px #FFD700, 0 0 8px rgba(255, 215, 0, 0.3)"
+              : "0 0 4px #FF4444, 0 0 8px rgba(255, 0, 0, 0.3)",
+            animation: `glowPulse ${1.5 + (i % 3) * 0.5}s ease-in-out infinite`,
+            animationDelay: `${i * 0.15}s`,
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -50,40 +54,24 @@ function ReelColumn({ symbols, spinning }: { symbols: string[]; spinning: boolea
 export default function SlotMachine() {
   const { profile, updateCoins } = useProfile();
   const { signOut } = useAuth();
-  const [reels, setReels] = useState<string[]>(["🐯", "💰", "🐉"]);
-  const [spinning, setSpinning] = useState(false);
   const [bet, setBet] = useState(10);
   const [lastWin, setLastWin] = useState(0);
   const [showWin, setShowWin] = useState(false);
-  const spinIntervals = useRef<NodeJS.Timeout[]>([]);
+  const [spinning, setSpinning] = useState(false);
+  const reelsRef = useRef<CanvasReelsHandle | null>(null);
 
   const coins = profile?.coins ?? 0;
 
   const spin = useCallback(async () => {
-    if (spinning || coins < bet) return;
+    if (spinning || coins < bet || !reelsRef.current) return;
 
     setSpinning(true);
     setShowWin(false);
     setLastWin(0);
 
-    // Rapid random symbols per reel
-    const newReels = [...reels];
-    spinIntervals.current = reels.map((_, i) =>
-      setInterval(() => {
-        newReels[i] = getRandomSymbol();
-        setReels([...newReels]);
-      }, 80 + i * 20)
-    );
-
-    // Stop reels one by one
     const finalReels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
 
-    for (let i = 0; i < 3; i++) {
-      await new Promise((r) => setTimeout(r, 600 + i * 400));
-      clearInterval(spinIntervals.current[i]);
-      newReels[i] = finalReels[i];
-      setReels([...newReels]);
-    }
+    await reelsRef.current.spin(finalReels);
 
     // Check win
     const key = finalReels.join("");
@@ -99,122 +87,237 @@ export default function SlotMachine() {
 
     await updateCoins(newCoins, won);
     setSpinning(false);
-  }, [spinning, coins, bet, reels, updateCoins]);
-
-  // Cleanup
-  useEffect(() => {
-    return () => spinIntervals.current.forEach(clearInterval);
-  }, []);
+  }, [spinning, coins, bet, updateCoins]);
 
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-game-gradient flex flex-col items-center justify-center p-4 relative">
-      {/* Header */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          {profile.display_name}
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={signOut}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <LogOut className="w-4 h-4" />
-        </Button>
+    <div className="min-h-screen bg-game-gradient flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Ambient particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full opacity-20"
+            style={{
+              width: 2 + Math.random() * 3,
+              height: 2 + Math.random() * 3,
+              background: "#FFD700",
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `glowPulse ${2 + Math.random() * 3}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          />
+        ))}
       </div>
 
+      {/* Header */}
+      <div className="absolute top-3 left-4 right-4 flex items-center justify-between z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs">
+            {profile.display_name?.[0]?.toUpperCase() ?? "?"}
+          </div>
+          <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+            {profile.display_name}
+          </span>
+        </div>
+        <button
+          onClick={signOut}
+          className="text-muted-foreground hover:text-foreground transition-colors p-1"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Tiger Logo */}
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="mb-2"
+      >
+        <img
+          src={tigerLogo}
+          alt="Fortune Tiger"
+          width={100}
+          height={100}
+          className="rounded-full border-2 border-primary/50 shadow-gold"
+        />
+      </motion.div>
+
       {/* Title */}
-      <h1 className="text-3xl md:text-5xl font-display font-black text-gold-gradient mb-6">
-        🐯 TIGRINHO
+      <h1 className="text-2xl md:text-4xl font-display font-black text-gold-gradient mb-4 tracking-wider">
+        FORTUNE TIGER
       </h1>
 
-      {/* Machine */}
-      <div className={`bg-card border-2 rounded-xl p-6 transition-all duration-300 ${showWin ? "border-primary shadow-win" : "border-border shadow-gold"}`}>
-        {/* Coins Display */}
-        <div className="text-center mb-4">
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">Saldo</span>
-          <div className={`text-2xl font-bold text-primary font-display ${showWin ? "animate-coin-bounce" : ""}`}>
-            💰 {coins.toLocaleString()}
-          </div>
+      {/* Machine Frame */}
+      <div className={`relative transition-all duration-500 ${showWin ? "shadow-win" : ""}`}>
+        {/* Outer ornamental frame */}
+        <div
+          className="absolute -inset-3 rounded-2xl pointer-events-none"
+          style={{
+            background: "linear-gradient(135deg, #8B6914 0%, #DAA520 15%, #FFD700 30%, #DAA520 50%, #8B6914 65%, #DAA520 80%, #FFD700 100%)",
+            padding: 2,
+          }}
+        />
+        <div
+          className="absolute -inset-2.5 rounded-2xl pointer-events-none"
+          style={{
+            background: "linear-gradient(180deg, #1a0808 0%, #2a1010 50%, #1a0808 100%)",
+          }}
+        />
+
+        {/* LED strips */}
+        <div className="absolute -top-2 left-4 right-4 z-10">
+          <LedStrip count={24} />
+        </div>
+        <div className="absolute -bottom-2 left-4 right-4 z-10">
+          <LedStrip count={24} />
+        </div>
+        <div className="absolute -left-2 top-4 bottom-4 z-10">
+          <LedStrip count={16} vertical />
+        </div>
+        <div className="absolute -right-2 top-4 bottom-4 z-10">
+          <LedStrip count={16} vertical />
         </div>
 
-        {/* Reels */}
-        <div className="flex gap-2 mb-4 justify-center">
-          {reels.map((sym, i) => (
-            <ReelColumn key={i} symbols={[sym]} spinning={spinning} />
-          ))}
-        </div>
-
-        {/* Win display */}
-        <AnimatePresence>
-          {showWin && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              className="text-center mb-4"
-            >
-              <div className="text-xl font-display font-bold text-primary">
-                🎉 +{lastWin.toLocaleString()} moedas!
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Bet controls */}
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <span className="text-xs text-muted-foreground">Aposta:</span>
-          {[5, 10, 25, 50, 100].map((b) => (
-            <button
-              key={b}
-              onClick={() => !spinning && setBet(b)}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-all
-                ${bet === b
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }
-                ${spinning ? "opacity-50 cursor-not-allowed" : ""}
-              `}
-            >
-              {b}
-            </button>
-          ))}
-        </div>
-
-        {/* Spin button */}
-        <Button
-          onClick={spin}
-          disabled={spinning || coins < bet}
-          className="w-full h-12 text-lg font-display font-bold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 glow-pulse"
+        {/* Machine body */}
+        <div
+          className="relative rounded-xl p-5"
+          style={{
+            background: "linear-gradient(180deg, #1a0a0a 0%, #2d1515 30%, #1a0a0a 100%)",
+            border: "1px solid #3d2a1a",
+          }}
         >
-          {spinning ? "GIRANDO..." : coins < bet ? "SEM MOEDAS" : "GIRAR 🎰"}
-        </Button>
+          {/* Coins display */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Saldo</span>
+              <motion.span
+                key={coins}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className="text-lg font-display font-bold text-primary"
+              >
+                💰 {coins.toLocaleString()}
+              </motion.span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Aposta</span>
+              <span className="text-lg font-display font-bold text-foreground">
+                {bet}
+              </span>
+            </div>
+          </div>
+
+          {/* Canvas Reels */}
+          <div className="flex justify-center">
+            <CanvasReels reelsRef={reelsRef} />
+          </div>
+
+          {/* Win display */}
+          <AnimatePresence>
+            {showWin && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0, y: -10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0, opacity: 0 }}
+                className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center z-20 pointer-events-none"
+              >
+                <div
+                  className="px-6 py-3 rounded-xl font-display font-black text-2xl text-primary-foreground"
+                  style={{
+                    background: "linear-gradient(135deg, #B8860B, #FFD700, #DAA520)",
+                    boxShadow: "0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(255, 215, 0, 0.3)",
+                  }}
+                >
+                  🎉 +{lastWin.toLocaleString()}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Bet selector */}
+          <div className="flex items-center justify-center gap-2 mt-3 mb-3">
+            {[5, 10, 25, 50, 100].map((b) => (
+              <button
+                key={b}
+                onClick={() => !spinning && setBet(b)}
+                disabled={spinning}
+                className="transition-all duration-200"
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  fontFamily: "Inter, sans-serif",
+                  background: bet === b
+                    ? "linear-gradient(135deg, #B8860B, #FFD700)"
+                    : "rgba(255, 255, 255, 0.05)",
+                  color: bet === b ? "#0a0506" : "rgba(255, 255, 255, 0.4)",
+                  border: bet === b ? "1px solid #FFD700" : "1px solid rgba(255, 255, 255, 0.08)",
+                  cursor: spinning ? "not-allowed" : "pointer",
+                  opacity: spinning ? 0.5 : 1,
+                }}
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+
+          {/* Spin button */}
+          <motion.button
+            whileTap={!spinning && coins >= bet ? { scale: 0.95 } : {}}
+            onClick={spin}
+            disabled={spinning || coins < bet}
+            className="w-full py-3 rounded-lg font-display font-black text-lg tracking-wider transition-all disabled:opacity-40"
+            style={{
+              background: spinning
+                ? "linear-gradient(135deg, #555, #333)"
+                : "linear-gradient(135deg, #8B0000, #CC0000, #8B0000)",
+              color: "#FFD700",
+              border: "2px solid",
+              borderColor: spinning ? "#555" : "#DAA520",
+              boxShadow: spinning
+                ? "none"
+                : "0 0 20px rgba(204, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+              cursor: spinning || coins < bet ? "not-allowed" : "pointer",
+              textShadow: "0 0 10px rgba(255, 215, 0, 0.5)",
+            }}
+          >
+            {spinning ? "GIRANDO..." : coins < bet ? "SEM MOEDAS" : "🎰 GIRAR"}
+          </motion.button>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="mt-6 flex gap-6 text-center">
+      <div className="mt-5 flex gap-8 text-center">
         <div>
-          <div className="text-xs text-muted-foreground">Rodadas</div>
-          <div className="text-lg font-bold text-foreground">{profile.total_spins}</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Rodadas</div>
+          <div className="text-lg font-bold text-foreground font-display">{profile.total_spins}</div>
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">Vitórias</div>
-          <div className="text-lg font-bold text-primary">{profile.total_wins}</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Vitórias</div>
+          <div className="text-lg font-bold text-primary font-display">{profile.total_wins}</div>
         </div>
       </div>
 
       {/* Payout table */}
-      <div className="mt-6 bg-card border border-border rounded-lg p-4 w-full max-w-xs">
-        <h3 className="text-xs text-muted-foreground uppercase tracking-wider text-center mb-2">
-          Tabela de Pagamentos
+      <div
+        className="mt-4 rounded-lg p-3 w-full max-w-xs"
+        style={{
+          background: "linear-gradient(180deg, rgba(26, 10, 10, 0.9), rgba(15, 5, 5, 0.95))",
+          border: "1px solid rgba(218, 165, 32, 0.2)",
+        }}
+      >
+        <h3 className="text-[10px] uppercase tracking-widest text-muted-foreground text-center mb-2 font-body">
+          Pagamentos
         </h3>
-        <div className="grid grid-cols-2 gap-1 text-sm">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
           {Object.entries(PAYOUTS).map(([combo, mult]) => (
-            <div key={combo} className="flex items-center justify-between px-2 py-1">
-              <span className="text-base">{combo.match(/.{1,2}/gu)?.join(" ")}</span>
-              <span className="text-primary font-bold">x{mult}</span>
+            <div key={combo} className="flex items-center justify-between text-sm px-1 py-0.5">
+              <span className="text-sm">{combo.match(/.{1,2}/gu)?.join(" ")}</span>
+              <span className="text-primary font-bold font-display text-xs">x{mult}</span>
             </div>
           ))}
         </div>
