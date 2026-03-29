@@ -9,6 +9,9 @@ import DeputadoDetalhe from "./pages/DeputadoDetalhe";
 import Senadores from "./pages/Senadores";
 import SenadorDetalhe from "./pages/SenadorDetalhe";
 import Votacoes from "./pages/Votacoes";
+import STFMinistros from "./pages/STFMinistros";
+import STFMinistroDetalhe from "./pages/STFMinistroDetalhe";
+import STFVotacoes from "./pages/STFVotacoes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,9 @@ const App = () => (
           <Route path="/senadores" element={<Senadores />} />
           <Route path="/senadores/:id" element={<SenadorDetalhe />} />
           <Route path="/votacoes" element={<Votacoes />} />
+          <Route path="/stf" element={<STFMinistros />} />
+          <Route path="/stf/votacoes" element={<STFVotacoes />} />
+          <Route path="/stf/:id" element={<STFMinistroDetalhe />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Building2, Users, Vote, Search, Menu, X } from "lucide-react";
+import { Building2, Users, Vote, Search, Menu, X, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: "/", label: "Início", icon: Building2 },
   { to: "/deputados", label: "Deputados", icon: Users },
   { to: "/senadores", label: "Senadores", icon: Users },
+  { to: "/stf", label: "STF", icon: Scale },
   { to: "/votacoes", label: "Votações", icon: Vote },
 ];
 
