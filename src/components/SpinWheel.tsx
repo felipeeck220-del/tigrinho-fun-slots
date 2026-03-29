@@ -228,19 +228,26 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
 
   const spin = useCallback((targetIndex: number): Promise<number> => {
     return new Promise((resolve) => {
-      // The pointer is at the top (angle 0 = right in canvas, but we want top)
-      // Segment center angle: we need the target segment center to align with top
-      // Top = -PI/2 in canvas coordinates
-      // Target center angle = targetIndex * SEGMENT_ANGLE + SEGMENT_ANGLE/2
-      // We need: finalAngle + targetCenter = -PI/2 + 2*PI*N (for some N)
-      // So finalAngle = -PI/2 - targetCenter + fullSpins
-
+      // Pointer is at top = -PI/2 in canvas coords
+      // We need the target segment center to align under the pointer
       const targetCenter = targetIndex * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
-      const fullSpins = Math.PI * 2 * (6 + Math.random() * 3); // 6-9 full rotations
-      const finalAngle = -Math.PI / 2 - targetCenter + fullSpins;
+      
+      // Calculate where we need to land (normalized)
+      const landAngle = -Math.PI / 2 - targetCenter;
+      
+      // Normalize current angle to 0..2PI range
+      const currentNorm = ((angleRef.current % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const targetNorm = ((landAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      
+      // Always spin forward: current + extra full rotations + distance to target
+      let forwardDistance = targetNorm - currentNorm;
+      if (forwardDistance <= 0) forwardDistance += Math.PI * 2;
+      
+      const fullSpins = Math.PI * 2 * (6 + Math.random() * 3);
+      const totalRotation = fullSpins + forwardDistance;
+      const finalAngle = angleRef.current + totalRotation;
 
       const startAngle = angleRef.current;
-      const totalRotation = finalAngle - startAngle;
       const duration = 4000 + Math.random() * 1000;
       const startTime = performance.now();
 
