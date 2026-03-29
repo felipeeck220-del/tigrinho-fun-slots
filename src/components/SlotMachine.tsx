@@ -11,7 +11,7 @@ export default function SlotMachine() {
   const { profile, updateCoins } = useProfile();
   const { signOut } = useAuth();
   const [spinning, setSpinning] = useState(false);
-  const [spinsLeft, setSpinsLeft] = useState(3);
+  const [spinsLeft, setSpinsLeft] = useState(10000);
   const [result, setResult] = useState<string | null>(null);
   const [showPrize, setShowPrize] = useState(false);
   const [wonIphone, setWonIphone] = useState(false);
