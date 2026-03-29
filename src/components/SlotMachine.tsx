@@ -238,19 +238,19 @@ export default function SlotMachine() {
         </h3>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-sm">
-            <img src={iphonePrize} alt="" width={20} height={20} />
-            <span className="text-primary font-bold">iPhone 17 Pro</span>
+            <span>💰</span>
+            <span className="text-primary font-bold">R$ 1.000</span>
             <span className="text-muted-foreground text-xs ml-auto">4 chances</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <span>🍀</span>
-            <span className="text-green-400 font-bold">+2 Rodadas</span>
-            <span className="text-muted-foreground text-xs ml-auto">2 chances</span>
+            <span>💵</span>
+            <span className="text-green-400 font-bold">R$ 100</span>
+            <span className="text-muted-foreground text-xs ml-auto">1 chance</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span>❌</span>
             <span className="text-muted-foreground">Perdeu</span>
-            <span className="text-muted-foreground text-xs ml-auto">2 chances</span>
+            <span className="text-muted-foreground text-xs ml-auto">3 chances</span>
           </div>
         </div>
       </div>
