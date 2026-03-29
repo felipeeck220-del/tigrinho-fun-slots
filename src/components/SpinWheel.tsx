@@ -200,7 +200,7 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
     ctx.closePath();
     ctx.fillStyle = "#FFD700";
     ctx.fill();
-  }, [size, imageLoaded]);
+  }, [size]);
 
   // Initial draw
   useEffect(() => {
