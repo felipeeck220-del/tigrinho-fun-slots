@@ -132,35 +132,23 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
       ctx.save();
       ctx.rotate(startAngle + SEGMENT_ANGLE / 2);
 
-      if (seg.type === "iphone" && iphoneImgRef.current) {
-        // Draw iPhone image
-        const imgSize = 40;
-        const imgDist = radius * 0.58;
-        ctx.drawImage(
-          iphoneImgRef.current,
-          imgDist - imgSize / 2,
-          -imgSize / 2,
-          imgSize,
-          imgSize
-        );
-        // Label
+      if (seg.type === "r1000") {
         ctx.fillStyle = "#FFD700";
-        ctx.font = "bold 9px Inter, sans-serif";
+        ctx.font = "bold 14px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("iPhone 17", radius * 0.58, 28);
-        ctx.fillText("Pro", radius * 0.58, 38);
-      } else if (seg.type === "extra_spins") {
+        ctx.fillText("R$", radius * 0.45, -8);
+        ctx.font = "bold 18px Inter, sans-serif";
+        ctx.fillText("1.000", radius * 0.55, 10);
+      } else if (seg.type === "r100") {
         ctx.fillStyle = "#44FF44";
-        ctx.font = "bold 13px Inter, sans-serif";
+        ctx.font = "bold 14px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("+2", radius * 0.55, -6);
-        ctx.font = "bold 9px Inter, sans-serif";
-        ctx.fillStyle = "#88FF88";
-        ctx.fillText("Rodadas", radius * 0.55, 8);
+        ctx.fillText("R$", radius * 0.45, -8);
+        ctx.font = "bold 18px Inter, sans-serif";
+        ctx.fillText("100", radius * 0.55, 10);
       } else {
-        // Loss
         ctx.fillStyle = "#FF4444";
         ctx.font = "bold 11px Inter, sans-serif";
         ctx.textAlign = "center";
