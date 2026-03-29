@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, Users, Vote, ArrowRight, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, Users, Vote, ArrowRight, TrendingUp, Scale } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Layout from "@/components/Layout";
 import PoliticianCard from "@/components/PoliticianCard";
 import { getDeputados, type Deputado } from "@/lib/api/camara";
 import { getSenadores, type Senador } from "@/lib/api/senado";
+import { getMinistrosSTF } from "@/lib/api/stf";
 
 export default function Index() {
   const [deputados, setDeputados] = useState<Deputado[]>([]);
   const [senadores, setSenadores] = useState<Senador[]>([]);
   const [loading, setLoading] = useState(true);
+  const ministros = getMinistrosSTF();
 
   useEffect(() => {
     Promise.all([
@@ -44,31 +48,37 @@ export default function Index() {
           <Button asChild size="lg">
             <Link to="/deputados">
               <Users className="w-4 h-4 mr-2" />
-              Ver Deputados
+              Deputados
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
             <Link to="/senadores">
               <Users className="w-4 h-4 mr-2" />
-              Ver Senadores
+              Senadores
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link to="/stf">
+              <Scale className="w-4 h-4 mr-2" />
+              STF
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
             <Link to="/votacoes">
               <Vote className="w-4 h-4 mr-2" />
-              Ver Votações
+              Votações
             </Link>
           </Button>
         </div>
       </section>
 
       {/* Stats */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <Card>
           <CardContent className="p-6 text-center">
             <Building2 className="w-8 h-8 text-primary mx-auto mb-2" />
             <p className="text-3xl font-display font-bold">513</p>
-            <p className="text-sm text-muted-foreground">Deputados Federais</p>
+            <p className="text-sm text-muted-foreground">Deputados</p>
           </CardContent>
         </Card>
         <Card>
@@ -80,14 +90,65 @@ export default function Index() {
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
+            <Scale className="w-8 h-8 text-primary mx-auto mb-2" />
+            <p className="text-3xl font-display font-bold">11</p>
+            <p className="text-sm text-muted-foreground">Ministros STF</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6 text-center">
             <Vote className="w-8 h-8 text-primary mx-auto mb-2" />
-            <p className="text-3xl font-display font-bold">2</p>
-            <p className="text-sm text-muted-foreground">Casas Legislativas</p>
+            <p className="text-3xl font-display font-bold">3</p>
+            <p className="text-sm text-muted-foreground">Poderes</p>
           </CardContent>
         </Card>
       </section>
 
-      {/* Recent Deputies */}
+      {/* STF Ministers */}
+      <section className="mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-xl font-bold">Ministros do STF</h2>
+          <div className="flex gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/stf/votacoes" className="gap-1">
+                Votações STF <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/stf" className="gap-1">
+                Ver todos <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {ministros.slice(0, 4).map((m) => (
+            <Link key={m.id} to={`/stf/${m.id}`}>
+              <Card className="hover:shadow-md transition-all hover:border-primary/30 cursor-pointer group">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <Avatar className="w-16 h-16 border-2 border-muted">
+                    <AvatarImage src={m.foto} alt={m.nome} />
+                    <AvatarFallback className="text-sm font-bold">
+                      {m.nome.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="font-display font-semibold text-sm group-hover:text-primary transition-colors">
+                    {m.nome}
+                  </p>
+                  <Badge
+                    variant={m.cargo === "Presidente" ? "default" : "outline"}
+                    className="text-[10px]"
+                  >
+                    {m.cargo}
+                  </Badge>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Deputies */}
       <section className="mb-12">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-xl font-bold">Deputados Federais</h2>
@@ -122,7 +183,7 @@ export default function Index() {
         )}
       </section>
 
-      {/* Recent Senators */}
+      {/* Senators */}
       <section className="mb-12">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-xl font-bold">Senadores</h2>
