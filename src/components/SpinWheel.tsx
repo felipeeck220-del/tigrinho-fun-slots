@@ -1,25 +1,25 @@
 import { useRef, useEffect, useCallback, useState, useImperativeHandle, forwardRef } from "react";
-import iphoneImg from "@/assets/iphone-prize.png";
 
-export type PrizeType = "iphone" | "loss" | "extra_spins";
+export type PrizeType = "r1000" | "r100" | "loss";
 
 export interface WheelSegment {
   label: string;
   type: PrizeType;
+  value: number;
   color1: string;
   color2: string;
 }
 
-// Layout: iPhone at positions 0,2,4,6 (alternating), loss at 1,5, extra at 3,7
+// Layout: R$1000 x4 (alternating), R$100 x1, Perdeu x3
 export const SEGMENTS: WheelSegment[] = [
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#B8860B", color2: "#FFD700" },
-  { label: "Perdeu!", type: "loss", color1: "#2a0a0a", color2: "#1a0505" },
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#DAA520", color2: "#FFD700" },
-  { label: "+2 Rodadas", type: "extra_spins", color1: "#0a2a0a", color2: "#0d3d0d" },
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#B8860B", color2: "#FFD700" },
-  { label: "Perdeu!", type: "loss", color1: "#2a0a0a", color2: "#1a0505" },
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#DAA520", color2: "#FFD700" },
-  { label: "+2 Rodadas", type: "extra_spins", color1: "#0a2a0a", color2: "#0d3d0d" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#B8860B", color2: "#FFD700" },
+  { label: "Perdeu!", type: "loss", value: 0, color1: "#2a0a0a", color2: "#1a0505" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#DAA520", color2: "#FFD700" },
+  { label: "Perdeu!", type: "loss", value: 0, color1: "#2a0a0a", color2: "#1a0505" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#B8860B", color2: "#FFD700" },
+  { label: "R$ 100", type: "r100", value: 100, color1: "#0a2a0a", color2: "#0d3d0d" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#DAA520", color2: "#FFD700" },
+  { label: "Perdeu!", type: "loss", value: 0, color1: "#2a0a0a", color2: "#1a0505" },
 ];
 
 const SEGMENT_ANGLE = (2 * Math.PI) / SEGMENTS.length;
@@ -36,18 +36,6 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const angleRef = useRef(0);
   const animRef = useRef<number>(0);
-  const iphoneImgRef = useRef<HTMLImageElement | null>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  // Load iPhone image
-  useEffect(() => {
-    const img = new Image();
-    img.src = iphoneImg;
-    img.onload = () => {
-      iphoneImgRef.current = img;
-      setImageLoaded(true);
-    };
-  }, []);
 
   const drawWheel = useCallback((angle: number) => {
     const canvas = canvasRef.current;
@@ -132,35 +120,23 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
       ctx.save();
       ctx.rotate(startAngle + SEGMENT_ANGLE / 2);
 
-      if (seg.type === "iphone" && iphoneImgRef.current) {
-        // Draw iPhone image
-        const imgSize = 40;
-        const imgDist = radius * 0.58;
-        ctx.drawImage(
-          iphoneImgRef.current,
-          imgDist - imgSize / 2,
-          -imgSize / 2,
-          imgSize,
-          imgSize
-        );
-        // Label
+      if (seg.type === "r1000") {
         ctx.fillStyle = "#FFD700";
-        ctx.font = "bold 9px Inter, sans-serif";
+        ctx.font = "bold 14px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("iPhone 17", radius * 0.58, 28);
-        ctx.fillText("Pro", radius * 0.58, 38);
-      } else if (seg.type === "extra_spins") {
+        ctx.fillText("R$", radius * 0.45, -8);
+        ctx.font = "bold 18px Inter, sans-serif";
+        ctx.fillText("1.000", radius * 0.55, 10);
+      } else if (seg.type === "r100") {
         ctx.fillStyle = "#44FF44";
-        ctx.font = "bold 13px Inter, sans-serif";
+        ctx.font = "bold 14px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("+2", radius * 0.55, -6);
-        ctx.font = "bold 9px Inter, sans-serif";
-        ctx.fillStyle = "#88FF88";
-        ctx.fillText("Rodadas", radius * 0.55, 8);
+        ctx.fillText("R$", radius * 0.45, -8);
+        ctx.font = "bold 18px Inter, sans-serif";
+        ctx.fillText("100", radius * 0.55, 10);
       } else {
-        // Loss
         ctx.fillStyle = "#FF4444";
         ctx.font = "bold 11px Inter, sans-serif";
         ctx.textAlign = "center";
@@ -219,7 +195,7 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
     ctx.closePath();
     ctx.fillStyle = "#FFD700";
     ctx.fill();
-  }, [size, imageLoaded]);
+  }, [size]);
 
   // Initial draw
   useEffect(() => {
