@@ -1,5 +1,4 @@
 import { useRef, useEffect, useCallback, useState, useImperativeHandle, forwardRef } from "react";
-import iphoneImg from "@/assets/iphone-prize.png";
 
 export type PrizeType = "iphone" | "loss" | "extra_spins";
 
