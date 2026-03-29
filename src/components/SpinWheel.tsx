@@ -1,24 +1,25 @@
 import { useRef, useEffect, useCallback, useState, useImperativeHandle, forwardRef } from "react";
 
-export type PrizeType = "iphone" | "loss" | "extra_spins";
+export type PrizeType = "r1000" | "r100" | "loss";
 
 export interface WheelSegment {
   label: string;
   type: PrizeType;
+  value: number;
   color1: string;
   color2: string;
 }
 
-// Layout: iPhone at positions 0,2,4,6 (alternating), loss at 1,5, extra at 3,7
+// Layout: R$1000 x4 (alternating), R$100 x1, Perdeu x3
 export const SEGMENTS: WheelSegment[] = [
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#B8860B", color2: "#FFD700" },
-  { label: "Perdeu!", type: "loss", color1: "#2a0a0a", color2: "#1a0505" },
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#DAA520", color2: "#FFD700" },
-  { label: "+2 Rodadas", type: "extra_spins", color1: "#0a2a0a", color2: "#0d3d0d" },
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#B8860B", color2: "#FFD700" },
-  { label: "Perdeu!", type: "loss", color1: "#2a0a0a", color2: "#1a0505" },
-  { label: "iPhone 17 Pro", type: "iphone", color1: "#DAA520", color2: "#FFD700" },
-  { label: "+2 Rodadas", type: "extra_spins", color1: "#0a2a0a", color2: "#0d3d0d" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#B8860B", color2: "#FFD700" },
+  { label: "Perdeu!", type: "loss", value: 0, color1: "#2a0a0a", color2: "#1a0505" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#DAA520", color2: "#FFD700" },
+  { label: "Perdeu!", type: "loss", value: 0, color1: "#2a0a0a", color2: "#1a0505" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#B8860B", color2: "#FFD700" },
+  { label: "R$ 100", type: "r100", value: 100, color1: "#0a2a0a", color2: "#0d3d0d" },
+  { label: "R$ 1.000", type: "r1000", value: 1000, color1: "#DAA520", color2: "#FFD700" },
+  { label: "Perdeu!", type: "loss", value: 0, color1: "#2a0a0a", color2: "#1a0505" },
 ];
 
 const SEGMENT_ANGLE = (2 * Math.PI) / SEGMENTS.length;
