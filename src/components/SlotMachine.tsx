@@ -2,92 +2,69 @@ import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Volume2, VolumeX } from "lucide-react";
-import CanvasReels, { type CanvasReelsHandle } from "./CanvasReels";
+import { LogOut } from "lucide-react";
+import SpinWheel, { SEGMENTS, type SpinWheelHandle } from "./SpinWheel";
 import tigerLogo from "@/assets/tiger-logo.png";
-
-const SYMBOLS = ["🐯", "💰", "🐉", "🏮", "💎", "🍀", "7️⃣", "⭐"];
-
-const PAYOUTS: Record<string, number> = {
-  "🐯🐯🐯": 50,
-  "💰💰💰": 30,
-  "🐉🐉🐉": 25,
-  "💎💎💎": 20,
-  "7️⃣7️⃣7️⃣": 15,
-  "🏮🏮🏮": 10,
-  "⭐⭐⭐": 8,
-  "🍀🍀🍀": 5,
-};
-
-function getRandomSymbol() {
-  return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-}
-
-// Decorative LED lights
-function LedStrip({ count, vertical }: { count: number; vertical?: boolean }) {
-  return (
-    <div className={`flex ${vertical ? "flex-col" : "flex-row"} gap-1.5 items-center justify-center`}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-full"
-          style={{
-            width: 6,
-            height: 6,
-            background: i % 3 === 0
-              ? "radial-gradient(circle, #FFD700 30%, #8B6914 100%)"
-              : i % 3 === 1
-              ? "radial-gradient(circle, #FF4444 30%, #8B0000 100%)"
-              : "radial-gradient(circle, #FFD700 30%, #8B6914 100%)",
-            boxShadow: i % 2 === 0
-              ? "0 0 4px #FFD700, 0 0 8px rgba(255, 215, 0, 0.3)"
-              : "0 0 4px #FF4444, 0 0 8px rgba(255, 0, 0, 0.3)",
-            animation: `glowPulse ${1.5 + (i % 3) * 0.5}s ease-in-out infinite`,
-            animationDelay: `${i * 0.15}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+import iphonePrize from "@/assets/iphone-prize.png";
 
 export default function SlotMachine() {
   const { profile, updateCoins } = useProfile();
   const { signOut } = useAuth();
-  const [bet, setBet] = useState(10);
-  const [lastWin, setLastWin] = useState(0);
-  const [showWin, setShowWin] = useState(false);
   const [spinning, setSpinning] = useState(false);
-  const reelsRef = useRef<CanvasReelsHandle | null>(null);
+  const [spinsLeft, setSpinsLeft] = useState(3);
+  const [result, setResult] = useState<string | null>(null);
+  const [showPrize, setShowPrize] = useState(false);
+  const [wonIphone, setWonIphone] = useState(false);
+  const wheelRef = useRef<SpinWheelHandle>(null);
 
   const coins = profile?.coins ?? 0;
 
   const spin = useCallback(async () => {
-    if (spinning || coins < bet || !reelsRef.current) return;
+    if (spinning || spinsLeft <= 0 || !wheelRef.current) return;
 
     setSpinning(true);
-    setShowWin(false);
-    setLastWin(0);
+    setResult(null);
+    setShowPrize(false);
+    setWonIphone(false);
 
-    const finalReels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-
-    await reelsRef.current.spin(finalReels);
-
-    // Check win
-    const key = finalReels.join("");
-    const payout = PAYOUTS[key];
-    const won = !!payout;
-    const winAmount = won ? bet * payout : 0;
-    const newCoins = coins - bet + winAmount;
-
-    if (won) {
-      setLastWin(winAmount);
-      setShowWin(true);
+    // Weighted random: loss is much more likely
+    // Indices: 0,2,4,6 = iphone, 1,5 = loss, 3,7 = extra_spins
+    const weights = [2, 35, 2, 10, 2, 35, 2, 10]; // iphone rare
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    let random = Math.random() * totalWeight;
+    let targetIndex = 0;
+    for (let i = 0; i < weights.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        targetIndex = i;
+        break;
+      }
     }
 
-    await updateCoins(newCoins, won);
+    await wheelRef.current.spin(targetIndex);
+
+    const segment = SEGMENTS[targetIndex];
+
+    if (segment.type === "iphone") {
+      setResult("🎉 Você ganhou um iPhone 17 Pro!");
+      setWonIphone(true);
+      setShowPrize(true);
+      setSpinsLeft((s) => s - 1);
+      await updateCoins(coins + 5000, true);
+    } else if (segment.type === "extra_spins") {
+      setResult("🍀 +2 rodadas extras!");
+      setSpinsLeft((s) => s + 2 - 1);
+      setShowPrize(true);
+      await updateCoins(coins, false);
+    } else {
+      setResult("😔 Não foi dessa vez...");
+      setSpinsLeft((s) => s - 1);
+      setShowPrize(true);
+      await updateCoins(coins, false);
+    }
+
     setSpinning(false);
-  }, [spinning, coins, bet, updateCoins]);
+  }, [spinning, spinsLeft, coins, updateCoins]);
 
   if (!profile) return null;
 
@@ -95,7 +72,7 @@ export default function SlotMachine() {
     <div className="min-h-screen bg-game-gradient flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Ambient particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {Array.from({ length: 15 }).map((_, i) => (
           <div
             key={i}
             className="absolute rounded-full opacity-20"
@@ -130,179 +107,140 @@ export default function SlotMachine() {
         </button>
       </div>
 
-      {/* Tiger Logo */}
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="mb-2"
-      >
+      {/* Logo + Title */}
+      <div className="flex items-center gap-3 mb-4">
         <img
           src={tigerLogo}
           alt="Fortune Tiger"
-          width={100}
-          height={100}
-          className="rounded-full border-2 border-primary/50 shadow-gold"
+          width={56}
+          height={56}
+          className="rounded-full border-2 border-primary/50"
         />
-      </motion.div>
-
-      {/* Title */}
-      <h1 className="text-2xl md:text-4xl font-display font-black text-gold-gradient mb-4 tracking-wider">
-        FORTUNE TIGER
-      </h1>
-
-      {/* Machine Frame */}
-      <div className={`relative transition-all duration-500 ${showWin ? "shadow-win" : ""}`}>
-        {/* Outer ornamental frame */}
-        <div
-          className="absolute -inset-3 rounded-2xl pointer-events-none"
-          style={{
-            background: "linear-gradient(135deg, #8B6914 0%, #DAA520 15%, #FFD700 30%, #DAA520 50%, #8B6914 65%, #DAA520 80%, #FFD700 100%)",
-            padding: 2,
-          }}
-        />
-        <div
-          className="absolute -inset-2.5 rounded-2xl pointer-events-none"
-          style={{
-            background: "linear-gradient(180deg, #1a0808 0%, #2a1010 50%, #1a0808 100%)",
-          }}
-        />
-
-        {/* LED strips */}
-        <div className="absolute -top-2 left-4 right-4 z-10">
-          <LedStrip count={24} />
-        </div>
-        <div className="absolute -bottom-2 left-4 right-4 z-10">
-          <LedStrip count={24} />
-        </div>
-        <div className="absolute -left-2 top-4 bottom-4 z-10">
-          <LedStrip count={16} vertical />
-        </div>
-        <div className="absolute -right-2 top-4 bottom-4 z-10">
-          <LedStrip count={16} vertical />
-        </div>
-
-        {/* Machine body */}
-        <div
-          className="relative rounded-xl p-5"
-          style={{
-            background: "linear-gradient(180deg, #1a0a0a 0%, #2d1515 30%, #1a0a0a 100%)",
-            border: "1px solid #3d2a1a",
-          }}
-        >
-          {/* Coins display */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Saldo</span>
-              <motion.span
-                key={coins}
-                initial={{ scale: 1.2 }}
-                animate={{ scale: 1 }}
-                className="text-lg font-display font-bold text-primary"
-              >
-                💰 {coins.toLocaleString()}
-              </motion.span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Aposta</span>
-              <span className="text-lg font-display font-bold text-foreground">
-                {bet}
-              </span>
-            </div>
-          </div>
-
-          {/* Canvas Reels */}
-          <div className="flex justify-center">
-            <CanvasReels reelsRef={reelsRef} />
-          </div>
-
-          {/* Win display */}
-          <AnimatePresence>
-            {showWin && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0, y: -10 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0, opacity: 0 }}
-                className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center z-20 pointer-events-none"
-              >
-                <div
-                  className="px-6 py-3 rounded-xl font-display font-black text-2xl text-primary-foreground"
-                  style={{
-                    background: "linear-gradient(135deg, #B8860B, #FFD700, #DAA520)",
-                    boxShadow: "0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(255, 215, 0, 0.3)",
-                  }}
-                >
-                  🎉 +{lastWin.toLocaleString()}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Bet selector */}
-          <div className="flex items-center justify-center gap-2 mt-3 mb-3">
-            {[5, 10, 25, 50, 100].map((b) => (
-              <button
-                key={b}
-                onClick={() => !spinning && setBet(b)}
-                disabled={spinning}
-                className="transition-all duration-200"
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: 6,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  fontFamily: "Inter, sans-serif",
-                  background: bet === b
-                    ? "linear-gradient(135deg, #B8860B, #FFD700)"
-                    : "rgba(255, 255, 255, 0.05)",
-                  color: bet === b ? "#0a0506" : "rgba(255, 255, 255, 0.4)",
-                  border: bet === b ? "1px solid #FFD700" : "1px solid rgba(255, 255, 255, 0.08)",
-                  cursor: spinning ? "not-allowed" : "pointer",
-                  opacity: spinning ? 0.5 : 1,
-                }}
-              >
-                {b}
-              </button>
-            ))}
-          </div>
-
-          {/* Spin button */}
-          <motion.button
-            whileTap={!spinning && coins >= bet ? { scale: 0.95 } : {}}
-            onClick={spin}
-            disabled={spinning || coins < bet}
-            className="w-full py-3 rounded-lg font-display font-black text-lg tracking-wider transition-all disabled:opacity-40"
-            style={{
-              background: spinning
-                ? "linear-gradient(135deg, #555, #333)"
-                : "linear-gradient(135deg, #8B0000, #CC0000, #8B0000)",
-              color: "#FFD700",
-              border: "2px solid",
-              borderColor: spinning ? "#555" : "#DAA520",
-              boxShadow: spinning
-                ? "none"
-                : "0 0 20px rgba(204, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-              cursor: spinning || coins < bet ? "not-allowed" : "pointer",
-              textShadow: "0 0 10px rgba(255, 215, 0, 0.5)",
-            }}
-          >
-            {spinning ? "GIRANDO..." : coins < bet ? "SEM MOEDAS" : "🎰 GIRAR"}
-          </motion.button>
+        <div>
+          <h1 className="text-xl md:text-3xl font-display font-black text-gold-gradient tracking-wider leading-tight">
+            FORTUNE TIGER
+          </h1>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-body">
+            Gire a roleta da sorte
+          </p>
         </div>
       </div>
+
+      {/* Spins + Coins info */}
+      <div className="flex gap-6 mb-4">
+        <div className="text-center">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-body block">Rodadas</span>
+          <motion.span
+            key={spinsLeft}
+            initial={{ scale: 1.3 }}
+            animate={{ scale: 1 }}
+            className="text-xl font-display font-bold text-foreground"
+          >
+            {spinsLeft}
+          </motion.span>
+        </div>
+        <div className="text-center">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-body block">Moedas</span>
+          <span className="text-xl font-display font-bold text-primary">
+            💰 {coins.toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      {/* Wheel */}
+      <div className="relative">
+        <SpinWheel ref={wheelRef} size={300} />
+
+        {/* Win overlay */}
+        <AnimatePresence>
+          {showPrize && wonIphone && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: "spring", damping: 10 }}
+              className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+            >
+              <div
+                className="px-4 py-3 rounded-2xl flex flex-col items-center"
+                style={{
+                  background: "rgba(0, 0, 0, 0.85)",
+                  boxShadow: "0 0 60px rgba(255, 215, 0, 0.5), 0 0 120px rgba(255, 215, 0, 0.2)",
+                  border: "2px solid #FFD700",
+                }}
+              >
+                <img src={iphonePrize} alt="iPhone 17 Pro" width={80} height={80} className="mb-2" />
+                <span className="text-primary font-display font-black text-lg">iPhone 17 Pro!</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Result text */}
+      <AnimatePresence>
+        {showPrize && result && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`mt-4 text-center font-display font-bold text-lg ${
+              wonIphone ? "text-primary" : result.includes("+2") ? "text-green-400" : "text-muted-foreground"
+            }`}
+          >
+            {result}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Spin button */}
+      <motion.button
+        whileTap={!spinning && spinsLeft > 0 ? { scale: 0.95 } : {}}
+        onClick={spin}
+        disabled={spinning || spinsLeft <= 0}
+        className="mt-5 w-64 py-3 rounded-xl font-display font-black text-lg tracking-wider transition-all disabled:opacity-40"
+        style={{
+          background: spinning
+            ? "linear-gradient(135deg, #555, #333)"
+            : spinsLeft <= 0
+            ? "linear-gradient(135deg, #333, #222)"
+            : "linear-gradient(135deg, #8B0000, #CC0000, #8B0000)",
+          color: "#FFD700",
+          border: "2px solid",
+          borderColor: spinning || spinsLeft <= 0 ? "#444" : "#DAA520",
+          boxShadow: spinning || spinsLeft <= 0
+            ? "none"
+            : "0 0 20px rgba(204, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+          cursor: spinning || spinsLeft <= 0 ? "not-allowed" : "pointer",
+          textShadow: "0 0 10px rgba(255, 215, 0, 0.5)",
+        }}
+      >
+        {spinning ? "GIRANDO..." : spinsLeft <= 0 ? "SEM RODADAS" : "🎰 GIRAR ROLETA"}
+      </motion.button>
+
+      {spinsLeft <= 0 && !spinning && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-3 text-sm text-muted-foreground font-body text-center"
+        >
+          Suas rodadas acabaram! Volte depois para mais.
+        </motion.p>
+      )}
 
       {/* Stats */}
       <div className="mt-5 flex gap-8 text-center">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Rodadas</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Total Giros</div>
           <div className="text-lg font-bold text-foreground font-display">{profile.total_spins}</div>
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Vitórias</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-body">Prêmios</div>
           <div className="text-lg font-bold text-primary font-display">{profile.total_wins}</div>
         </div>
       </div>
 
-      {/* Payout table */}
+      {/* Prize info */}
       <div
         className="mt-4 rounded-lg p-3 w-full max-w-xs"
         style={{
@@ -311,15 +249,24 @@ export default function SlotMachine() {
         }}
       >
         <h3 className="text-[10px] uppercase tracking-widest text-muted-foreground text-center mb-2 font-body">
-          Pagamentos
+          Prêmios da Roleta
         </h3>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-          {Object.entries(PAYOUTS).map(([combo, mult]) => (
-            <div key={combo} className="flex items-center justify-between text-sm px-1 py-0.5">
-              <span className="text-sm">{combo.match(/.{1,2}/gu)?.join(" ")}</span>
-              <span className="text-primary font-bold font-display text-xs">x{mult}</span>
-            </div>
-          ))}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 text-sm">
+            <img src={iphonePrize} alt="" width={20} height={20} />
+            <span className="text-primary font-bold">iPhone 17 Pro</span>
+            <span className="text-muted-foreground text-xs ml-auto">4 chances</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <span>🍀</span>
+            <span className="text-green-400 font-bold">+2 Rodadas</span>
+            <span className="text-muted-foreground text-xs ml-auto">2 chances</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <span>❌</span>
+            <span className="text-muted-foreground">Perdeu</span>
+            <span className="text-muted-foreground text-xs ml-auto">2 chances</span>
+          </div>
         </div>
       </div>
     </div>
