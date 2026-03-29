@@ -36,17 +36,10 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const angleRef = useRef(0);
   const animRef = useRef<number>(0);
-  const iphoneImgRef = useRef<HTMLImageElement | null>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [, setImageLoaded] = useState(false);
 
-  // Load iPhone image
   useEffect(() => {
-    const img = new Image();
-    img.src = iphoneImg;
-    img.onload = () => {
-      iphoneImgRef.current = img;
-      setImageLoaded(true);
-    };
+    setImageLoaded(true);
   }, []);
 
   const drawWheel = useCallback((angle: number) => {

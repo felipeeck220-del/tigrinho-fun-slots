@@ -27,21 +27,20 @@ export default function SlotMachine() {
     setShowPrize(false);
     setWonIphone(false);
 
-    // Spin the wheel and get the segment it actually landed on
     const landedIndex = await wheelRef.current.spin();
     const segment = SEGMENTS[landedIndex];
 
-    if (segment.type === "iphone") {
-      setResult("🎉 Você ganhou um iPhone 17 Pro!");
+    if (segment.type === "r1000") {
+      setResult("🎉 Você ganhou R$ 1.000!");
       setWonIphone(true);
       setShowPrize(true);
       setSpinsLeft((s) => s - 1);
-      await updateCoins(coins + 5000, true);
-    } else if (segment.type === "extra_spins") {
-      setResult("🍀 +2 rodadas extras!");
-      setSpinsLeft((s) => s + 2 - 1);
+      await updateCoins(coins + 1000, true);
+    } else if (segment.type === "r100") {
+      setResult("💰 Você ganhou R$ 100!");
       setShowPrize(true);
-      await updateCoins(coins, false);
+      setSpinsLeft((s) => s - 1);
+      await updateCoins(coins + 100, true);
     } else {
       setResult("😔 Não foi dessa vez...");
       setSpinsLeft((s) => s - 1);
