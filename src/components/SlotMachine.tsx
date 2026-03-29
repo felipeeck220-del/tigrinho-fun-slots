@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LogOut } from "lucide-react";
 import SpinWheel, { SEGMENTS, type SpinWheelHandle } from "./SpinWheel";
 import tigerLogo from "@/assets/tiger-logo.png";
-import iphonePrize from "@/assets/iphone-prize.png";
+
 
 export default function SlotMachine() {
   const { profile, updateCoins } = useProfile();
