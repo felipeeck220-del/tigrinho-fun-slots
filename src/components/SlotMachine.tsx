@@ -27,23 +27,9 @@ export default function SlotMachine() {
     setShowPrize(false);
     setWonIphone(false);
 
-    // Weighted random: loss is much more likely
-    // Indices: 0,2,4,6 = iphone, 1,5 = loss, 3,7 = extra_spins
-    const weights = [2, 35, 2, 10, 2, 35, 2, 10]; // iphone rare
-    const totalWeight = weights.reduce((a, b) => a + b, 0);
-    let random = Math.random() * totalWeight;
-    let targetIndex = 0;
-    for (let i = 0; i < weights.length; i++) {
-      random -= weights[i];
-      if (random <= 0) {
-        targetIndex = i;
-        break;
-      }
-    }
-
-    await wheelRef.current.spin(targetIndex);
-
-    const segment = SEGMENTS[targetIndex];
+    // Spin the wheel and get the segment it actually landed on
+    const landedIndex = await wheelRef.current.spin();
+    const segment = SEGMENTS[landedIndex];
 
     if (segment.type === "iphone") {
       setResult("🎉 Você ganhou um iPhone 17 Pro!");
