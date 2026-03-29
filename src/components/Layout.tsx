@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: "/", label: "Início", icon: Building2 },
   { to: "/deputados", label: "Deputados", icon: Users },
   { to: "/senadores", label: "Senadores", icon: Users },
+  { to: "/stf", label: "STF", icon: Scale },
   { to: "/votacoes", label: "Votações", icon: Vote },
 ];
 
