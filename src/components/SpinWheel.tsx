@@ -36,11 +36,6 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const angleRef = useRef(0);
   const animRef = useRef<number>(0);
-  const [, setImageLoaded] = useState(false);
-
-  useEffect(() => {
-    setImageLoaded(true);
-  }, []);
 
   const drawWheel = useCallback((angle: number) => {
     const canvas = canvasRef.current;
