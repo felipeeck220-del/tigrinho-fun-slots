@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Building2, Users, Vote, Search, Menu, X } from "lucide-react";
+import { Building2, Users, Vote, Search, Menu, X, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
