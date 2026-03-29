@@ -1,12 +1,12 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, GraduationCap, Calendar, UserCheck } from "lucide-react";
+import { ArrowLeft, MapPin, GraduationCap, Calendar, UserCheck, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Layout from "@/components/Layout";
 import VoteBar from "@/components/VoteBar";
-import { getMinistroSTF, getVotacoesSTF, type MinistroSTF, type VotacaoSTF } from "@/lib/api/stf";
+import { getMinistroSTF, getVotosDoMinistro } from "@/lib/api/stf";
 
 export default function STFMinistroDetalhe() {
   const { id } = useParams<{ id: string }>();
@@ -20,10 +20,7 @@ export default function STFMinistroDetalhe() {
     );
   }
 
-  // Find votações where this ministro voted
-  const votacoes = getVotacoesSTF().filter((v) =>
-    v.votos.some((voto) => voto.ministro === ministro.nome)
-  );
+  const stats = getVotosDoMinistro(ministro.nome);
 
   return (
     <Layout>
@@ -79,48 +76,75 @@ export default function STFMinistroDetalhe() {
         </CardContent>
       </Card>
 
+      {/* Voting stats */}
+      {stats.total > 0 && (
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-display font-bold">{stats.total}</p>
+              <p className="text-xs text-muted-foreground">Votações</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-display font-bold text-vote-favor">{stats.favor}</p>
+              <p className="text-xs text-muted-foreground">Favorável</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-display font-bold text-vote-contra">{stats.contra}</p>
+              <p className="text-xs text-muted-foreground">Contrário</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Votações deste ministro */}
       <h2 className="font-display text-xl font-bold mb-4">Votações com participação</h2>
-      {votacoes.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Nenhuma votação registrada.</p>
+      {stats.votacoes.length === 0 ? (
+        <p className="text-muted-foreground text-sm">Nenhuma votação registrada neste acervo.</p>
       ) : (
         <div className="space-y-3">
-          {votacoes.map((v) => {
+          {stats.votacoes.map((v) => {
             const votoDoMinistro = v.votos.find((vt) => vt.ministro === ministro.nome);
             return (
-              <Card key={v.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-[10px]">{v.processo}</Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(v.data).toLocaleDateString("pt-BR")}
-                        </span>
+              <Link key={v.id} to="/stf/votacoes">
+                <Card className="hover:border-primary/30 transition-all">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <Badge variant="outline" className="text-[10px]">{v.processo}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{v.tema}</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(v.data).toLocaleDateString("pt-BR")}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium">{v.descricao}</p>
                       </div>
-                      <p className="text-sm font-medium">{v.descricao}</p>
+                      {votoDoMinistro && (
+                        <Badge
+                          variant="outline"
+                          className={`shrink-0 text-xs ${
+                            votoDoMinistro.voto === "Favorável" || votoDoMinistro.voto === "Acompanhou relator"
+                              ? "text-vote-favor border-vote-favor"
+                              : votoDoMinistro.voto === "Contrário" || votoDoMinistro.voto === "Divergiu do relator"
+                              ? "text-vote-contra border-vote-contra"
+                              : "text-vote-abstencao border-vote-abstencao"
+                          }`}
+                        >
+                          {votoDoMinistro.voto}
+                        </Badge>
+                      )}
                     </div>
-                    {votoDoMinistro && (
-                      <Badge
-                        variant="outline"
-                        className={`shrink-0 text-xs ${
-                          votoDoMinistro.voto === "Favorável"
-                            ? "text-vote-favor border-vote-favor"
-                            : votoDoMinistro.voto === "Contrário"
-                            ? "text-vote-contra border-vote-contra"
-                            : "text-vote-abstencao border-vote-abstencao"
-                        }`}
-                      >
-                        {votoDoMinistro.voto}
-                      </Badge>
-                    )}
-                  </div>
-                  <VoteBar sim={v.placar.favor} nao={v.placar.contra} />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Resultado: {v.resultado}
-                  </p>
-                </CardContent>
-              </Card>
+                    <VoteBar sim={v.placar.favor} nao={v.placar.contra} />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {v.resultado}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
         </div>
