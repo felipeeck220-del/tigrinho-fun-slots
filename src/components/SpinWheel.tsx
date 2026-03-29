@@ -25,7 +25,7 @@ export const SEGMENTS: WheelSegment[] = [
 const SEGMENT_ANGLE = (2 * Math.PI) / SEGMENTS.length;
 
 export interface SpinWheelHandle {
-  spin: (targetIndex: number) => Promise<number>;
+  spin: () => Promise<number>;
 }
 
 interface Props {
@@ -226,29 +226,22 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
     drawWheel(angleRef.current);
   }, [drawWheel]);
 
-  const spin = useCallback((targetIndex: number): Promise<number> => {
+  // Helper: determine which segment the pointer is on given an angle
+  const getSegmentAtPointer = useCallback((angle: number): number => {
+    // Pointer is at top = -PI/2 in canvas coords
+    // Local pointer angle in wheel's coordinate frame
+    const localAngle = ((-Math.PI / 2 - angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    return Math.floor(localAngle / SEGMENT_ANGLE) % SEGMENTS.length;
+  }, []);
+
+  const spin = useCallback((): Promise<number> => {
     return new Promise((resolve) => {
-      // Pointer is at top = -PI/2 in canvas coords
-      // We need the target segment center to align under the pointer
-      const targetCenter = targetIndex * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
-      
-      // Calculate where we need to land (normalized)
-      const landAngle = -Math.PI / 2 - targetCenter;
-      
-      // Normalize current angle to 0..2PI range
-      const currentNorm = ((angleRef.current % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-      const targetNorm = ((landAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-      
-      // Always spin forward: current + extra full rotations + distance to target
-      let forwardDistance = targetNorm - currentNorm;
-      if (forwardDistance <= 0) forwardDistance += Math.PI * 2;
-      
-      const fullSpins = Math.PI * 2 * (6 + Math.random() * 3);
-      const totalRotation = fullSpins + forwardDistance;
+      // Random total rotation: 5-8 full spins + random offset
+      const totalRotation = Math.PI * 2 * (5 + Math.random() * 3) + Math.random() * Math.PI * 2;
       const finalAngle = angleRef.current + totalRotation;
 
       const startAngle = angleRef.current;
-      const duration = 4000 + Math.random() * 1000;
+      const duration = 4000 + Math.random() * 1500;
       const startTime = performance.now();
 
       const animateStep = (time: number) => {
@@ -267,14 +260,16 @@ const SpinWheel = forwardRef<SpinWheelHandle, Props>(({ size = 320 }, ref) => {
         } else {
           angleRef.current = finalAngle;
           drawWheel(finalAngle);
-          resolve(targetIndex);
+          // Read the actual segment the pointer landed on
+          const landedSegment = getSegmentAtPointer(finalAngle);
+          resolve(landedSegment);
         }
       };
 
       cancelAnimationFrame(animRef.current);
       animRef.current = requestAnimationFrame(animateStep);
     });
-  }, [drawWheel]);
+  }, [drawWheel, getSegmentAtPointer]);
 
   useImperativeHandle(ref, () => ({ spin }), [spin]);
 
