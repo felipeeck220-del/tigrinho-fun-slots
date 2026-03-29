@@ -147,15 +147,15 @@ export default function SlotMachine() {
               className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
             >
               <div
-                className="px-4 py-3 rounded-2xl flex flex-col items-center"
+                className="px-6 py-4 rounded-2xl flex flex-col items-center"
                 style={{
                   background: "rgba(0, 0, 0, 0.85)",
                   boxShadow: "0 0 60px rgba(255, 215, 0, 0.5), 0 0 120px rgba(255, 215, 0, 0.2)",
                   border: "2px solid #FFD700",
                 }}
               >
-                <img src={iphonePrize} alt="iPhone 17 Pro" width={80} height={80} className="mb-2" />
-                <span className="text-primary font-display font-black text-lg">iPhone 17 Pro!</span>
+                <span className="text-4xl mb-2">💰</span>
+                <span className="text-primary font-display font-black text-2xl">R$ 1.000!</span>
               </div>
             </motion.div>
           )}
