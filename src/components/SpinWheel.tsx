@@ -25,7 +25,7 @@ export const SEGMENTS: WheelSegment[] = [
 const SEGMENT_ANGLE = (2 * Math.PI) / SEGMENTS.length;
 
 export interface SpinWheelHandle {
-  spin: (targetIndex: number) => Promise<number>;
+  spin: () => Promise<number>;
 }
 
 interface Props {
