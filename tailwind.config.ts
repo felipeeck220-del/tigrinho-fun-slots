@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Cinzel", "serif"],
+        display: ["Space Grotesk", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },
       colors: {
@@ -51,12 +51,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gold: {
-          DEFAULT: "hsl(var(--gold-glow))",
-          dark: "hsl(var(--gold-dark))",
+        vote: {
+          favor: "hsl(var(--vote-favor))",
+          contra: "hsl(var(--vote-contra))",
+          abstencao: "hsl(var(--vote-abstencao))",
         },
-        "red-deep": "hsl(var(--red-deep))",
-        "red-bright": "hsl(var(--red-bright))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
