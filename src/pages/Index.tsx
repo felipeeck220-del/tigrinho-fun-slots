@@ -107,7 +107,7 @@ export default function Index() {
             </button>
           </div>
           <p className="text-[11px] text-muted-foreground text-center -mt-0.5">
-            De <span className="line-through">R$ 49,90</span> por apenas R$ 9,90
+            De <span className="line-through">R$ 10,99</span> por apenas R$ 9,90
           </p>
         </motion.div>
 
