@@ -114,7 +114,6 @@ export default function SubscribeModal({ open, onClose }: SubscribeModalProps) {
           transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
         >
-        >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <h2 className="text-base font-bold text-foreground">
