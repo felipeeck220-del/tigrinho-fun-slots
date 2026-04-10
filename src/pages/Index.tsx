@@ -28,7 +28,7 @@ function LockedOverlay() {
 }
 
 export default function Index() {
-  const [selectedPlan, setSelectedPlan] = useState<string>("7dias");
+  
 
   return (
     <div className="min-h-screen bg-background flex justify-center">
