@@ -113,14 +113,34 @@ export default function Index() {
 
         {/* Video Teaser */}
         <div className="px-4 py-4">
-          <video
-            src="/videos/teaser.mp4"
-            controls
-            playsInline
-            preload="metadata"
-            className="w-full rounded-2xl overflow-hidden"
-            poster=""
-          />
+          <div
+            className="relative w-full rounded-2xl overflow-hidden cursor-pointer group"
+            onClick={(e) => {
+              const video = e.currentTarget.querySelector("video");
+              if (video) {
+                if (video.paused) video.play();
+                else video.pause();
+              }
+            }}
+          >
+            <video
+              src="/videos/teaser.mp4"
+              playsInline
+              autoPlay
+              muted
+              loop
+              preload="auto"
+              className="w-full block"
+            />
+            {/* Play/Pause overlay */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="w-14 h-14 rounded-full bg-white/80 flex items-center justify-center">
+                <svg className="w-6 h-6 text-foreground ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Divider */}
