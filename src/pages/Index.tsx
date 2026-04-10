@@ -103,6 +103,7 @@ export default function Index() {
               -80% OFF
             </div>
             <button
+              onClick={() => setModalOpen(true)}
               className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-primary to-primary/70 text-primary-foreground shadow-lg"
             >
               Assinar agora (30 dias) R$ 9,90
