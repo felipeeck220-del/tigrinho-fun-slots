@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Bookmark, Lock, MoreHorizontal, LogIn } from "lucide-react";
 import avatarImg from "@/assets/avatar-profile.png";
@@ -5,6 +6,7 @@ import coverImg from "@/assets/cover-banner.png";
 import blur1 from "@/assets/blur-content-1.jpg";
 import blur2 from "@/assets/blur-content-2.jpg";
 import blur3 from "@/assets/blur-content-3.jpg";
+import SubscribeModal from "@/components/SubscribeModal";
 
 const POSTS = [
   { id: 1, image: blur1, likes: "5.4k", aspect: "aspect-square" },
