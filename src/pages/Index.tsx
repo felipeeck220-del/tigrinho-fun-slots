@@ -217,12 +217,14 @@ export default function Index() {
 
         {/* Bottom CTA */}
         <div className="px-4 pb-6">
-          <button className="w-full py-4 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity">
+          <button onClick={() => setModalOpen(true)} className="w-full py-4 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity">
             Libere o VIP para ver tudo
             <br />
             <span className="text-[11px] font-normal opacity-70">Acesso imediato a mídias exclusivas</span>
           </button>
         </div>
+
+        <SubscribeModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
         {/* FAQ */}
         <div className="px-4 pb-8">
