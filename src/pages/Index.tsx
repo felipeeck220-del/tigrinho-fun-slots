@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Bookmark, Lock, MoreHorizontal, LogIn } from "lucide-react";
 import avatarImg from "@/assets/avatar-profile.png";
+import coverImg from "@/assets/cover-banner.png";
 import blur1 from "@/assets/blur-content-1.jpg";
 import blur2 from "@/assets/blur-content-2.jpg";
 import blur3 from "@/assets/blur-content-3.jpg";
@@ -43,9 +44,13 @@ export default function Index() {
           </button>
         </header>
 
-        {/* Cover / Profile Section */}
+        {/* Cover Banner */}
+        <div className="w-full h-32 overflow-hidden">
+          <img src={coverImg} alt="Cover" className="w-full h-full object-cover" />
+        </div>
+
         <motion.div
-          className="flex flex-col items-center pt-6 pb-4 px-4 gap-3"
+          className="flex flex-col items-center -mt-10 pb-4 px-4 gap-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
