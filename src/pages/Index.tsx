@@ -98,7 +98,7 @@ export default function Index() {
           {/* Main CTA with badge */}
           <div className="relative">
             <div className="absolute -top-2 right-3 bg-destructive text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
-              -10% OFF
+              -80% OFF
             </div>
             <button
               className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-primary to-primary/70 text-primary-foreground shadow-lg"
@@ -107,7 +107,7 @@ export default function Index() {
             </button>
           </div>
           <p className="text-[11px] text-muted-foreground text-center -mt-0.5">
-            De <span className="line-through">R$ 10,99</span> por apenas R$ 9,90
+            De <span className="line-through">R$ 49,90</span> por apenas R$ 9,90
           </p>
         </motion.div>
 
