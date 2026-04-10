@@ -91,54 +91,60 @@ export default function Index() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          {/* Main CTA */}
-          <button
-            onClick={() => setSelectedPlan("7dias")}
-            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
-              selectedPlan === "7dias"
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "bg-muted text-foreground"
-            }`}
-          >
-            Assinar agora (7 dias) R$ 19,90
-          </button>
-          <p className="text-[10px] text-muted-foreground text-center -mt-1">
-            De <span className="line-through">R$ 49,90</span> por apenas R$ 19,90
+          {/* Main CTA with badge */}
+          <div className="relative">
+            <div className="absolute -top-2 right-3 bg-destructive text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+              -10% OFF
+            </div>
+            <button
+              onClick={() => setSelectedPlan("7dias")}
+              className={`w-full py-4 rounded-2xl font-bold text-base transition-all ${
+                selectedPlan === "7dias"
+                  ? "bg-gradient-to-r from-primary to-primary/70 text-primary-foreground shadow-lg"
+                  : "bg-gradient-to-r from-primary/80 to-primary/50 text-primary-foreground"
+              }`}
+            >
+              Assinar agora (7 dias) R$ 19,90
+            </button>
+          </div>
+          <p className="text-[11px] text-muted-foreground text-center -mt-0.5">
+            De <span className="line-through">R$ 22,90</span> por apenas R$ 19,90
           </p>
 
           {/* Plan options */}
-          <div className="flex flex-col gap-1.5 mt-2">
+          <div className="flex flex-col gap-2 mt-1">
             <button
               onClick={() => setSelectedPlan("mensal")}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all ${
+              className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-sm transition-all ${
                 selectedPlan === "mensal"
-                  ? "border-primary bg-primary/5"
-                  : "border-border bg-card"
+                  ? "bg-gradient-to-r from-primary/40 to-primary/20 border border-primary/30"
+                  : "bg-gradient-to-r from-primary/30 to-primary/10 border border-primary/20"
               }`}
             >
-              <span className="text-muted-foreground">Mensal (30 dias)</span>
-              <span className="font-bold text-foreground">R$ 29,90</span>
+              <span className="font-bold text-foreground">Mensal <span className="font-normal text-muted-foreground">(30 dias)</span></span>
+              <span className="font-extrabold text-foreground text-base">R$ 29,90</span>
             </button>
 
             <button
               onClick={() => setSelectedPlan("semestral")}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all ${
+              className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-sm transition-all ${
                 selectedPlan === "semestral"
-                  ? "border-primary bg-primary/5"
-                  : "border-border bg-card"
+                  ? "bg-gradient-to-r from-primary/40 to-primary/20 border border-primary/30"
+                  : "bg-gradient-to-r from-primary/30 to-primary/10 border border-primary/20"
               }`}
             >
-              <span className="text-muted-foreground">6 meses <span className="text-[10px]">(semestral)</span></span>
-              <span className="font-bold text-foreground">R$ 99,90</span>
+              <span className="font-bold text-foreground">6 meses <span className="font-normal text-muted-foreground">(semestral)</span></span>
+              <span className="font-extrabold text-foreground text-base">R$ 99,90</span>
             </button>
           </div>
 
-          {/* Payment button */}
-          <button className="w-full py-3 mt-2 rounded-xl bg-foreground text-background font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-            ✅ Já fiz o pagamento
+          {/* Payment button - dark style with lock icon */}
+          <button className="w-full py-4 mt-2 rounded-2xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+            <Lock className="w-4 h-4" />
+            Já fiz o pagamento
           </button>
-          <p className="text-[10px] text-muted-foreground text-center">
-            Toque acima para validar sua conta
+          <p className="text-[10px] text-muted-foreground text-center -mt-0.5">
+            Toque acima para criar sua conta
           </p>
         </motion.div>
 
