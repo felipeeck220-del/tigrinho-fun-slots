@@ -29,7 +29,7 @@ function LockedOverlay() {
 }
 
 export default function Index() {
-  
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background flex justify-center">
