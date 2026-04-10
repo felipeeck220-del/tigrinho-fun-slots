@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      pix_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          paid_at: string | null
+          pix_code: string
+          status: string
+          transaction_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          paid_at?: string | null
+          pix_code: string
+          status?: string
+          transaction_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          paid_at?: string | null
+          pix_code?: string
+          status?: string
+          transaction_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
