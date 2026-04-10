@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { motion } from "framer-motion";
 import { motion } from "framer-motion";
 import { Heart, Bookmark, Lock, MoreHorizontal, LogIn } from "lucide-react";
 import avatarImg from "@/assets/avatar-profile.png";
