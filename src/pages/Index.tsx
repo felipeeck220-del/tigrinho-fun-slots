@@ -111,6 +111,18 @@ export default function Index() {
           </p>
         </motion.div>
 
+        {/* Video Teaser */}
+        <div className="px-4 py-4">
+          <video
+            src="/videos/teaser.mp4"
+            controls
+            playsInline
+            preload="metadata"
+            className="w-full rounded-2xl overflow-hidden"
+            poster=""
+          />
+        </div>
+
         {/* Divider */}
         <div className="h-2 bg-muted" />
 
