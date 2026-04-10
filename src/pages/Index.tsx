@@ -1,227 +1,243 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Instagram,
-  Twitter,
-  MessageCircle,
-  Heart,
-  Star,
-  Crown,
-  Sparkles,
-  ExternalLink,
-  Copy,
-  Check,
-} from "lucide-react";
+import { Heart, Bookmark, Lock, MoreHorizontal, LogIn } from "lucide-react";
 import avatarImg from "@/assets/avatar-profile.png";
+import blur1 from "@/assets/blur-content-1.jpg";
+import blur2 from "@/assets/blur-content-2.jpg";
+import blur3 from "@/assets/blur-content-3.jpg";
 
-const LINKS = [
-  { label: "Instagram", icon: Instagram, url: "#", color: "from-pink-500 to-purple-500" },
-  { label: "Twitter / X", icon: Twitter, url: "#", color: "from-blue-400 to-cyan-400" },
-  { label: "Telegram", icon: MessageCircle, url: "#", color: "from-sky-400 to-blue-500" },
+const POSTS = [
+  { id: 1, image: blur1, likes: "5.4k", aspect: "aspect-square" },
+  { id: 2, image: blur2, likes: "3.2k", aspect: "aspect-[4/5]" },
+  { id: 3, image: blur3, likes: "7.1k", aspect: "aspect-square" },
 ];
 
-const PLANS = [
-  {
-    name: "Básico",
-    price: "R$ 19,90",
-    period: "/mês",
-    icon: Heart,
-    features: ["Acesso ao conteúdo exclusivo", "Mensagens diretas", "Grupo VIP"],
-    color: "from-pink-500/20 to-purple-500/20",
-    border: "border-pink-500/30",
-    popular: false,
-  },
-  {
-    name: "Premium",
-    price: "R$ 49,90",
-    period: "/mês",
-    icon: Crown,
-    features: ["Tudo do Básico", "Conteúdo premium", "Chamadas de vídeo", "Prioridade nas respostas"],
-    color: "from-amber-500/20 to-orange-500/20",
-    border: "border-amber-500/30",
-    popular: true,
-  },
-  {
-    name: "VIP",
-    price: "R$ 99,90",
-    period: "/mês",
-    icon: Sparkles,
-    features: ["Tudo do Premium", "Conteúdo personalizado", "Acesso vitalício ao grupo", "Surpresas mensais"],
-    color: "from-violet-500/20 to-fuchsia-500/20",
-    border: "border-violet-500/30",
-    popular: false,
-  },
-];
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" as const },
-  }),
-};
+function LockedOverlay() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-foreground/10 backdrop-blur-sm">
+      <div className="bg-card/90 rounded-xl px-6 py-4 flex flex-col items-center gap-1.5 shadow-lg">
+        <Lock className="w-5 h-5 text-muted-foreground" />
+        <span className="text-xs font-semibold text-foreground tracking-wide uppercase">
+          Conteúdo Exclusivo
+        </span>
+        <span className="text-[10px] text-muted-foreground">Toque para liberar</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Index() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyPix = () => {
-    navigator.clipboard.writeText("exemplo@pix.com");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const [selectedPlan, setSelectedPlan] = useState<string>("7dias");
 
   return (
     <div className="min-h-screen bg-background flex justify-center">
-      <div className="w-full max-w-md px-4 py-8 flex flex-col items-center gap-6">
-        {/* Avatar + Info */}
+      <div className="w-full max-w-md flex flex-col">
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
+          <h1 className="text-lg font-extrabold text-foreground">
+            Milena<span className="text-primary">Vip</span>
+          </h1>
+          <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <LogIn className="w-4 h-4" />
+            Entrar
+          </button>
+        </header>
+
+        {/* Cover / Profile Section */}
         <motion.div
-          className="flex flex-col items-center gap-3"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center pt-6 pb-4 px-4 gap-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
         >
-          <div className="relative">
-            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-violet-600 p-[3px]">
-              <img
-                src={avatarImg}
-                alt="Avatar"
-                width={112}
-                height={112}
-                className="w-full h-full rounded-full object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-500 border-[3px] border-background" />
+          {/* Avatar */}
+          <div className="w-20 h-20 rounded-full border-[3px] border-primary p-[2px]">
+            <img
+              src={avatarImg}
+              alt="Milena"
+              width={80}
+              height={80}
+              className="w-full h-full rounded-full object-cover"
+            />
           </div>
 
           <div className="text-center">
-            <h1 className="text-xl font-bold text-foreground tracking-tight font-['Space_Grotesk']">
-              Luna Privé
-            </h1>
-            <p className="text-muted-foreground text-sm">@lunaprive</p>
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-base font-bold text-foreground">Milena</span>
+              <span className="text-primary text-sm">✓</span>
+            </div>
+            <p className="text-xs text-muted-foreground">@milenapadilha.oficial</p>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground max-w-[280px] leading-relaxed">
-            ✨ Conteúdo exclusivo para assinantes ✨
-            <br />
-            Seu espaço de conexão e carinho 💜
+          {/* Stats */}
+          <div className="flex items-center gap-1 text-sm">
+            <span className="font-bold text-foreground">183.7K</span>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Heart className="w-3.5 h-3.5 text-destructive fill-destructive" />
+            <span>LIKES</span>
+          </div>
+
+          {/* Offers */}
+          <p className="text-sm text-foreground mt-1">
+            Ofertas exclusivas 🔥
           </p>
-
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 text-amber-400" /> 4.9
-            </span>
-            <span>•</span>
-            <span>2.4k assinantes</span>
-            <span>•</span>
-            <span>328 posts</span>
-          </div>
         </motion.div>
 
-        {/* Social Links */}
+        {/* Plans Section */}
         <motion.div
-          className="w-full flex flex-col gap-2.5"
-          initial="hidden"
-          animate="visible"
-        >
-          {LINKS.map((link, i) => (
-            <motion.a
-              key={link.label}
-              href={link.url}
-              custom={i}
-              variants={fadeUp}
-              className={`flex items-center gap-3 w-full px-4 py-3.5 rounded-xl bg-card border border-border hover:border-primary/40 transition-all duration-300 group`}
-            >
-              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${link.color} flex items-center justify-center`}>
-                <link.icon className="w-4.5 h-4.5 text-foreground" />
-              </div>
-              <span className="text-sm font-medium text-foreground flex-1">{link.label}</span>
-              <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </motion.a>
-          ))}
-        </motion.div>
-
-        {/* Plans */}
-        <motion.div
-          className="w-full flex flex-col gap-3"
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.h2
-            custom={0}
-            variants={fadeUp}
-            className="text-base font-semibold text-foreground font-['Space_Grotesk'] text-center"
-          >
-            Escolha seu plano
-          </motion.h2>
-
-          {PLANS.map((plan, i) => (
-            <motion.div
-              key={plan.name}
-              custom={i + 1}
-              variants={fadeUp}
-              className={`relative w-full rounded-xl bg-gradient-to-br ${plan.color} border ${plan.border} p-4 flex flex-col gap-3`}
-            >
-              {plan.popular && (
-                <span className="absolute -top-2.5 right-3 px-2.5 py-0.5 rounded-full bg-amber-500 text-[10px] font-bold uppercase tracking-wider text-background">
-                  Popular
-                </span>
-              )}
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <plan.icon className="w-5 h-5 text-foreground" />
-                  <span className="font-semibold text-foreground">{plan.name}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-lg font-bold text-foreground">{plan.price}</span>
-                  <span className="text-xs text-muted-foreground">{plan.period}</span>
-                </div>
-              </div>
-
-              <ul className="flex flex-col gap-1.5">
-                {plan.features.map((feat) => (
-                  <li key={feat} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />
-                    {feat}
-                  </li>
-                ))}
-              </ul>
-
-              <button className="w-full py-2.5 rounded-lg bg-foreground/10 hover:bg-foreground/15 text-sm font-medium text-foreground transition-colors backdrop-blur-sm">
-                Assinar agora
-              </button>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* PIX */}
-        <motion.div
+          className="px-4 pb-4 flex flex-col gap-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="w-full"
+          transition={{ delay: 0.2 }}
         >
+          {/* Main CTA */}
           <button
-            onClick={handleCopyPix}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-all text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => setSelectedPlan("7dias")}
+            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
+              selectedPlan === "7dias"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "bg-muted text-foreground"
+            }`}
           >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 text-green-400" /> Chave copiada!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" /> Copiar chave PIX
-              </>
-            )}
+            Assinar agora (7 dias) R$ 19,90
           </button>
+          <p className="text-[10px] text-muted-foreground text-center -mt-1">
+            De <span className="line-through">R$ 49,90</span> por apenas R$ 19,90
+          </p>
+
+          {/* Plan options */}
+          <div className="flex flex-col gap-1.5 mt-2">
+            <button
+              onClick={() => setSelectedPlan("mensal")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all ${
+                selectedPlan === "mensal"
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-card"
+              }`}
+            >
+              <span className="text-muted-foreground">Mensal (30 dias)</span>
+              <span className="font-bold text-foreground">R$ 29,90</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedPlan("semestral")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all ${
+                selectedPlan === "semestral"
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-card"
+              }`}
+            >
+              <span className="text-muted-foreground">6 meses <span className="text-[10px]">(semestral)</span></span>
+              <span className="font-bold text-foreground">R$ 99,90</span>
+            </button>
+          </div>
+
+          {/* Payment button */}
+          <button className="w-full py-3 mt-2 rounded-xl bg-foreground text-background font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+            ✅ Já fiz o pagamento
+          </button>
+          <p className="text-[10px] text-muted-foreground text-center">
+            Toque acima para validar sua conta
+          </p>
         </motion.div>
 
-        {/* Footer */}
-        <p className="text-[10px] text-muted-foreground/50 text-center pb-4">
-          © 2026 Luna Privé · Todos os direitos reservados
-        </p>
+        {/* Divider */}
+        <div className="h-2 bg-muted" />
+
+        {/* Feed - Locked posts */}
+        <div className="flex flex-col">
+          {POSTS.map((post, i) => (
+            <motion.div
+              key={post.id}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, ease: "easeOut" as const }}
+            >
+              {/* Post header */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <img
+                  src={avatarImg}
+                  alt="Milena"
+                  loading="lazy"
+                  width={36}
+                  height={36}
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-semibold text-foreground">Milena</span>
+                    <span className="text-primary text-xs">✓</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">@milenapadilha.oficial</p>
+                </div>
+                <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
+              </div>
+
+              {/* Post image with lock */}
+              <div className={`relative w-full ${post.aspect} overflow-hidden`}>
+                <img
+                  src={post.image}
+                  alt="Conteúdo exclusivo"
+                  loading="lazy"
+                  width={640}
+                  height={640}
+                  className="w-full h-full object-cover blur-lg scale-110"
+                />
+                <LockedOverlay />
+              </div>
+
+              {/* Post actions */}
+              <div className="flex items-center justify-between px-4 py-2.5">
+                <div className="flex items-center gap-4">
+                  <button className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors">
+                    <Heart className="w-5 h-5" />
+                  </button>
+                </div>
+                <button className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Bookmark className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Likes */}
+              <div className="px-4 pb-3 flex items-center gap-1.5">
+                <Heart className="w-3.5 h-3.5 text-destructive fill-destructive" />
+                <span className="text-xs font-semibold text-foreground">{post.likes} Likes</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* "E muito mais..." */}
+        <p className="text-center text-sm text-muted-foreground py-4">E muito mais...</p>
+
+        {/* Bottom CTA */}
+        <div className="px-4 pb-6">
+          <button className="w-full py-4 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity">
+            Libere o VIP para ver tudo
+            <br />
+            <span className="text-[11px] font-normal opacity-70">Acesso imediato a mídias exclusivas</span>
+          </button>
+        </div>
+
+        {/* FAQ */}
+        <div className="px-4 pb-8">
+          <h2 className="text-base font-bold text-foreground mb-3">Dúvidas Frequentes</h2>
+          <div className="flex flex-col gap-2">
+            {[
+              { q: "Como funciona?", a: "Escolha seu plano, faça o pagamento e tenha acesso imediato a todo conteúdo exclusivo." },
+              { q: "O pagamento é seguro?", a: "Sim! Utilizamos as melhores plataformas de pagamento do mercado." },
+              { q: "Posso cancelar?", a: "Sim, você pode cancelar a qualquer momento sem taxas adicionais." },
+            ].map((faq) => (
+              <details key={faq.q} className="bg-card border border-border rounded-xl overflow-hidden">
+                <summary className="px-4 py-3 text-sm font-medium text-foreground cursor-pointer">
+                  {faq.q}
+                </summary>
+                <p className="px-4 pb-3 text-xs text-muted-foreground">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
