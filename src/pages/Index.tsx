@@ -44,9 +44,13 @@ export default function Index() {
           </button>
         </header>
 
-        {/* Cover / Profile Section */}
+        {/* Cover Banner */}
+        <div className="w-full h-32 overflow-hidden">
+          <img src={coverImg} alt="Cover" className="w-full h-full object-cover" />
+        </div>
+
         <motion.div
-          className="flex flex-col items-center pt-6 pb-4 px-4 gap-3"
+          className="flex flex-col items-center -mt-10 pb-4 px-4 gap-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
