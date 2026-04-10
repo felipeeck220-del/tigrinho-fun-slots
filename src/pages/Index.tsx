@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Bookmark, Lock, MoreHorizontal, LogIn } from "lucide-react";
 import avatarImg from "@/assets/avatar-profile.png";
@@ -5,6 +6,7 @@ import coverImg from "@/assets/cover-banner.png";
 import blur1 from "@/assets/blur-content-1.jpg";
 import blur2 from "@/assets/blur-content-2.jpg";
 import blur3 from "@/assets/blur-content-3.jpg";
+import SubscribeModal from "@/components/SubscribeModal";
 
 const POSTS = [
   { id: 1, image: blur1, likes: "5.4k", aspect: "aspect-square" },
@@ -27,7 +29,7 @@ function LockedOverlay() {
 }
 
 export default function Index() {
-  
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background flex justify-center">
@@ -101,6 +103,7 @@ export default function Index() {
               -80% OFF
             </div>
             <button
+              onClick={() => setModalOpen(true)}
               className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-primary to-primary/70 text-primary-foreground shadow-lg"
             >
               Assinar agora (30 dias) R$ 9,90
@@ -214,12 +217,14 @@ export default function Index() {
 
         {/* Bottom CTA */}
         <div className="px-4 pb-6">
-          <button className="w-full py-4 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity">
+          <button onClick={() => setModalOpen(true)} className="w-full py-4 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity">
             Libere o VIP para ver tudo
             <br />
             <span className="text-[11px] font-normal opacity-70">Acesso imediato a mídias exclusivas</span>
           </button>
         </div>
+
+        <SubscribeModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
         {/* FAQ */}
         <div className="px-4 pb-8">
